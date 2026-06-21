@@ -61,6 +61,7 @@ async def analyze_image(path: str):
         pixels = list(img.getdata())
         if img.mode == "RGBA": pixels = [(r,g,b) for r,g,b,a in pixels]
         elif img.mode == "L": pixels = [(p,p,p) for p in pixels]
+        elif img.mode == "P": img = img.convert("RGB"); pixels = list(img.getdata())
         quantized = [(r//32*32, g//32*32, b//32*32) for r,g,b in pixels[:10000]]
         result["colors"] = [{"rgb": list(c), "hex": "#{:02x}{:02x}{:02x}".format(*c)} for c,n in Counter(quantized).most_common(5)]
 
