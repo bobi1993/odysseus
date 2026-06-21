@@ -733,15 +733,15 @@ from routes.font_routes import setup_font_routes
 app.include_router(setup_font_routes())
 
 
-# MCP (Model Context Protocol)
-from src.mcp_manager import McpManager
-from src.agent_tools import set_mcp_manager
-from routes.mcp_routes import setup_mcp_routes
-
-mcp_manager = McpManager()
-set_mcp_manager(mcp_manager)
-app.include_router(setup_mcp_routes(mcp_manager))
-logger.info("MCP routes initialized")
+# MCP (Model Context Protocol) — DISABLED (causes async cancel scope crash on shutdown)
+# from src.mcp_manager import McpManager
+# from src.agent_tools import set_mcp_manager
+# from routes.mcp_routes import setup_mcp_routes
+# mcp_manager = McpManager()
+# set_mcp_manager(mcp_manager)
+# app.include_router(setup_mcp_routes(mcp_manager))
+# logger.info("MCP routes initialized")
+logger.info("MCP disabled (async cancel scope workaround)")
 
 # AI Interaction tools (debates, pipelines, self-managing AI, UI control)
 from src.ai_interaction import set_session_manager as set_ai_session_manager, set_memory_manager as set_ai_memory_manager, set_rag_manager as set_ai_rag_manager
@@ -948,22 +948,21 @@ async def _startup_event():
         _startup_tasks.append(start_bg_monitor())
     except Exception as _e:
         logger.warning("Failed to start background-job monitor: %s", _e)
-    # MCP servers can be slow or blocked by local tooling. Connect them after
-    # the web server is accepting traffic instead of delaying the whole UI.
-    async def _startup_mcp_connections():
-        try:
-            from src.builtin_mcp import register_builtin_servers
-            await register_builtin_servers(mcp_manager)
-        except BaseException as e:
-            logger.warning(f"Built-in MCP registration failed (non-critical): {type(e).__name__}: {e}")
-        try:
-            await asyncio.wait_for(mcp_manager.connect_all_enabled(), timeout=20)
-        except asyncio.TimeoutError:
-            logger.warning("User MCP startup timed out (non-critical)")
-        except BaseException as e:
-            logger.warning(f"MCP startup failed (non-critical): {type(e).__name__}: {e}")
+    # MCP servers — DISABLED (causes async cancel scope crash)
+    # async def _startup_mcp_connections():
+    #     try:
+    #         from src.builtin_mcp import register_builtin_servers
+    #         await register_builtin_servers(mcp_manager)
+    #     except BaseException as e:
+    #         logger.warning(f"Built-in MCP registration failed (non-critical): {type(e).__name__}: {e}")
+    #     try:
+    #         await asyncio.wait_for(mcp_manager.connect_all_enabled(), timeout=20)
+    #     except asyncio.TimeoutError:
+    #         logger.warning("User MCP startup timed out (non-critical)")
+    #     except BaseException as e:
+    #         logger.warning(f"MCP startup failed (non-critical): {type(e).__name__}: {e}")
 
-    _startup_tasks.append(asyncio.create_task(_startup_mcp_connections()))
+    # _startup_tasks.append(asyncio.create_task(_startup_mcp_connections()))
 
     # Pre-warm the RAG tool index off the request path. Loading the local
     # embedding model + opening ChromaDB + indexing the built-in tools is a
@@ -1171,11 +1170,11 @@ async def _shutdown_event():
         await webhook_manager.close()
     except Exception as e:
         logger.warning(f"Webhook manager shutdown error: {e}")
-    # Disconnect all MCP servers
-    try:
-        await mcp_manager.disconnect_all()
-    except Exception as e:
-        logger.warning(f"MCP shutdown error: {e}")
+    # Disconnect all MCP servers — DISABLED
+    # try:
+    #     await mcp_manager.disconnect_all()
+    # except Exception as e:
+    #     logger.warning(f"MCP shutdown error: {e}")
     logger.info("Application shutdown complete")
 
 
