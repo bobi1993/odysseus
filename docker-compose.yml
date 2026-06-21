@@ -148,7 +148,48 @@ services:
       - NTFY_BASE_URL=${NTFY_BASE_URL:-http://localhost:8091}
     restart: unless-stopped
 
+  # ─── FACE RECOGNITION SERVICE ────────────────────────────────────────
+  face-service:
+    build:
+      context: ./face-service
+      dockerfile: Dockerfile
+    ports:
+      - "${FACE_SERVICE_BIND:-127.0.0.1}:8050:8050"
+    volumes:
+      - ${APP_DATA_DIR:-./data}:/app/data:z
+      - face-model-cache:/app/models
+      - face-temp:/tmp/vrframes
+    environment:
+      - LOG_LEVEL=${FACE_LOG_LEVEL:-INFO}
+      - FACE_MODEL_NAME=${FACE_MODEL_NAME:-buffalo_l}
+      - FACE_MODEL_DIR=/app/models
+      - FACE_DETECTION_SIZE=${FACE_DETECTION_SIZE:-640}
+      - FACE_MATCH_THRESHOLD=${FACE_MATCH_THRESHOLD:-0.35}
+      - FACE_CLUSTER_THRESHOLD=${FACE_CLUSTER_THRESHOLD:-0.50}
+      - FACE_MIN_CONFIDENCE=${FACE_MIN_CONFIDENCE:-0.60}
+      - KEYFRAME_INTERVAL_SEC=${KEYFRAME_INTERVAL_SEC:-5}
+      - KEYFRAME_MAX_PER_VIDEO=${KEYFRAME_MAX_PER_VIDEO:-20}
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_VISION_MODEL=${OLLAMA_VISION_MODEL:-llava:latest}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          memory: 5G
+        reservations:
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8050/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 volumes:
   searxng-data:
   chromadb-data:
   ntfy-cache:
+  face-model-cache:
+  face-temp:
