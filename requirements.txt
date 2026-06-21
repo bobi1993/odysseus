@@ -5,7 +5,10 @@ python-dotenv
 httpx
 pydantic>=2.13.4
 pydantic-settings>=2.14.1
-SQLAlchemy
+SQLAlchemy>=2.0
+aiosqlite
+psutil
+uvicorn[standard]
 pypdf
 beautifulsoup4
 charset-normalizer
@@ -43,6 +46,7 @@ qrcode[pil]
 croniter
 pytest
 pytest-asyncio
+together
 # starlette.testclient prefers httpx2 since Starlette 1.2.0 and warns on every
 # TestClient import when only classic httpx is present. Runtime code keeps
 # using `httpx` above; this is test-client only.

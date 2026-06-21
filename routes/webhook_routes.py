@@ -197,6 +197,7 @@ def setup_webhook_routes(
         "opencode-go": "https://opencode.ai/zen/go/v1",
         "fireworks": "https://api.fireworks.ai/inference/v1",
         "venice": "https://api.venice.ai/api/v1",
+        "vercel": "https://ai-gateway.vercel.sh/v1",
         "kimi-code": "https://api.kimi.com/coding/v1",
         "kimicode": "https://api.kimi.com/coding/v1",
     }

@@ -134,8 +134,10 @@ const _ENDPOINT_LABELS = [
   [/(^|\.)together\.(ai|xyz)$/i, "Together"],
   [/(^|\.)fireworks\.ai$/i, "Fireworks"],
   [/(^|\.)perplexity\.ai$/i, "Perplexity"],
-  [/(^|\.)nvidia\.com$/i, "NVIDIA"],
-  [/(^|\.)x\.ai$/i, "xAI"],
+  [/(^|\\.)nvidia\.com$/i, "NVIDIA"],
+  [/(^|\\.)x\.ai$/i, "xAI"],
+  [/(^|\\.)ai-gateway\.vercel\.sh$/i, "Vercel AI Gateway"],
+  [/(^|\\.)vercel\.sh$/i, "Vercel AI Gateway"],
 ];
 
 /**

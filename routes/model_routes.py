@@ -271,6 +271,7 @@ _PROVIDER_CURATED = {
         "meta-llama/Llama-4-Maverick-17B-128E-Instruct",
         "deepseek-ai/DeepSeek-R1",
         "Qwen/Qwen2.5-72B-Instruct-Turbo",
+        "dehorn93_47fa/meta-llama/Llama-4-Scout-17B-16E-Instruct-FP8-Lora-b6465c16",
     ],
     "fireworks": [
         "accounts/fireworks/models/llama4-scout-instruct-basic",
@@ -283,6 +284,15 @@ _PROVIDER_CURATED = {
     ],
     "xai": [
         "grok-4.3", "grok-4", "grok-4-fast", "grok-3", "grok-3-fast",
+    ],
+    "vercel": [
+        "openai/gpt-4o", "openai/gpt-4o-mini", "openai/gpt-4-turbo",
+        "openai/gpt-3.5-turbo", "anthropic/claude-sonnet-4",
+        "anthropic/claude-3.5-sonnet", "anthropic/claude-3-haiku",
+        "google/gemini-2.5-pro", "google/gemini-2.5-flash",
+        "xai/grok-4", "xai/grok-3",
+        "meta-llama/llama-4-maverick", "meta-llama/llama-4-scout",
+        "moonshotai/kimi-k2", "deepseek/deepseek-r1",
     ],
 }
 
@@ -305,6 +315,8 @@ _HOST_TO_CURATED = (
     ("nvidia.com", "nvidia"),
     ("openrouter.ai", "openrouter"),
     ("ollama.com", "ollama"),
+    ("ai-gateway.vercel.sh", "vercel"),
+    ("vercel.sh", "vercel"),
 )
 
 

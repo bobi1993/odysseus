@@ -148,6 +148,9 @@ DEFAULT_SETTINGS = {
     "utility_model_fallbacks": [],
     "teacher_model": "",
     "teacher_enabled": False,
+    # Together AI API key (for MCP together_server and direct SDK calls).
+    # Can also be set via TOGETHER_API_KEY env var (takes precedence).
+    "together_api_key": "",
     # Skills: minimum self-reported confidence for an auto-written (LLM-authored)
     # DRAFT skill to be injected into the agent prompt. Published skills always
     # qualify. Keeps low-confidence auto-skills out of context until they're

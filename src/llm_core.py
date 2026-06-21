@@ -606,6 +606,8 @@ def _detect_provider(url: str) -> str:
         return "opencode-zen"
     if _host_match(url, "openrouter.ai"):
         return "openrouter"
+    if _host_match(url, "ai-gateway.vercel.sh") or _host_match(url, "vercel.sh"):
+        return "vercel"
     if _host_match(url, "groq.com"):
         return "groq"
     if _host_match(url, "nvidia.com"):
@@ -707,6 +709,7 @@ def _provider_label(url: str) -> str:
     if _host_match(url, "nvidia.com"): return "NVIDIA"
     if _host_match(url, "googleapis.com"): return "Google"
     if _host_match(url, "together.xyz", "together.ai"): return "Together"
+    if _host_match(url, "ai-gateway.vercel.sh") or _host_match(url, "vercel.sh"): return "Vercel AI Gateway"
     if _host_match(url, "fireworks.ai"): return "Fireworks"
     if _host_match(url, "kimi.com"):
         try:
