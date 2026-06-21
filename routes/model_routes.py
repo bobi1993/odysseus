@@ -2334,4 +2334,19 @@ def setup_model_routes(model_discovery):
         _save_settings(settings)
         return {"ok": True, "disabled": body.disabled}
 
+    # ── Free Models Browser ──
+
+    @router.get("/free-models")
+    def get_free_models():
+        """Get free models catalog for browser."""
+        try:
+            free_models_path = os.path.join(os.path.dirname(__file__), "..", "data", "free_models.json")
+            if not os.path.exists(free_models_path):
+                raise HTTPException(404, "Free models catalog not found")
+            with open(free_models_path, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to load free models: {e}")
+            raise HTTPException(500, str(e))
+
     return router

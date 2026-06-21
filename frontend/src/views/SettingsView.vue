@@ -84,6 +84,15 @@
       </div>
     </section>
 
+    <!-- Free Models Browser Section -->
+    <section class="settings-section glass">
+      <h2 class="section-title">
+        <Braces :size="18" />
+        Free Models Browser
+      </h2>
+      <FreeModelsBrowser />
+    </section>
+
     <!-- System Info -->
     <section class="settings-section glass">
       <h2 class="section-title">
@@ -122,6 +131,7 @@ import {
 import { useChatStore } from '../stores/chat.js'
 import { useSystemStore } from '../stores/system.js'
 import api from '../api/client.js'
+import FreeModelsBrowser from '../components/FreeModelsBrowser.vue'
 
 const chatStore = useChatStore()
 const systemStore = useSystemStore()
