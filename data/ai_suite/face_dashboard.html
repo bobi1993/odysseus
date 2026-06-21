@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Suite — Face Recognition Dashboard</title>
+<style>
+:root{--bg:#0d0d0d;--fg:#e0e0e0;--accent:#6366f1;--border:#2a2a2a;--card:#161616;--success:#22c55e;--error:#ef4444;--warning:#f59e0b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;line-height:1.4}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+.header .status{display:flex;align-items:center;gap:6px;font-size:12px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minwidth:140px,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.stat-card .value{font-size:28px;font-weight:700;color:var(--accent)}
+.stat-card .label{font-size:11px;opacity:.6;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.actions{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:12px;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--border)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{opacity:.9}
+.btn.danger{border-color:var(--error);color:var(--error)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.progress{display:none;margin-bottom:24px}
+.progress-bar-bg{background:var(--border);border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
+.progress-bar-fill{background:var(--accent);height:100%;width:0%;transition:width .3s}
+.progress-text{font-size:12px;opacity:.6}
+.section{margin-bottom:24px}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;opacity:.7;margin-bottom:8px}
+.list{display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto}
+.row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;background:var(--card);border:1px solid var(--border);transition:background .15s}
+.row:hover{background:color-mix(in srgb,var(--fg) 5%,var(--card))}
+.thumb{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--border);display:flex;align-items:center;justify-content:center}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.name{font-size:13px;font-weight:600}
+.meta{font-size:11px;opacity:.5;margin-top:2px}
+.actions-row{display:flex;gap:4px;flex-shrink:0}
+.btn-sm{padding:4px 10px;font-size:11px}
+.input-sm{font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--fg);width:140px}
+.empty{padding:24px;text-align:center;opacity:.4;font-size:13px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
+details{margin-top:16px}
+details summary{cursor:pointer;font-size:12px;opacity:.7;padding:8px 0}
+.config-grid{display:grid;gap:12px;margin-top:8px}
+.config-row{display:flex;align-items:center;gap:8px}
+.config-row label{font-size:12px;min-width:140px}
+.config-row input[type=range]{width:120px}
+.config-row span{font-size:11px;opacity:.6;min-width:30px}
+.log{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.6}
+.log-entry{padding:2px 0;border-bottom:1px solid var(--border)}
+.log-entry:last-child{border-bottom:none}
+.log-time{opacity:.5}
+.log-level-info{color:var(--accent)}
+.log-level-error{color:var(--error)}
+.log-level-success{color:var(--success)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎭 AI Suite — Face Recognition Dashboard</h1>
+  <div class="status">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Connecting...</span>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card"><div class="value" id="stat-clusters">0</div><div class="label">Clusters</div></div>
+    <div class="stat-card"><div class="value" id="stat-named">0</div><div class="label">Named</div></div>
+    <div class="stat-card"><div class="value" id="stat-detections">0</div><div class="label">Detections</div></div>
+    <div class="stat-card"><div class="value" id="stat-videos">0</div><div class="label">Videos</div></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn primary" id="btn-scan">▶ Scan All Videos</button>
+    <button class="btn" id="btn-refresh">↻ Refresh</button>
+    <button class="btn" id="btn-clear-offline">🗑 Clear Offline</button>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress" id="scan-progress">
+    <div class="progress-text" id="scan-text">Scanning...</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="scan-bar"></div></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Named Performers -->
+    <div class="section">
+      <div class="section-title">Named Performers</div>
+      <div class="list" id="named-list"><div class="empty">No named performers yet.</div></div>
+    </div>
+
+    <!-- Unnamed Clusters -->
+    <div class="section">
+      <div class="section-title">Unnamed Clusters</div>
+      <div class="list" id="unnamed-list"><div class="empty">No clusters detected.</div></div>
+    </div>
+  </div>
+
+  <!-- Config -->
+  <details>
+    <summary>⚙ Configuration</summary>
+    <div class="config-grid">
+      <div class="config-row"><label>Detector</label>
+        <select id="cfg-detector"><option value="ssd">SSD Mobilenet V1</option><option value="tiny">TinyFaceDetector</option><option value="haar">Haar Cascade</option></select>
+      </div>
+      <div class="config-row"><label>SSD Confidence</label>
+        <input type="range" id="cfg-ssd-conf" min="0.1" max="0.9" step="0.05" value="0.4"><span id="cfg-ssd-conf-val">0.4</span>
+      </div>
+      <div class="config-row"><label>Min Face Size</label>
+        <input type="range" id="cfg-min-size" min="20" max="200" step="10" value="60"><span id="cfg-min-size-val">60</span>
+      </div>
+      <div class="config-row"><label>Match Threshold</label>
+        <input type="range" id="cfg-thresh" min="0.3" max="0.7" step="0.05" value="0.45"><span id="cfg-thresh-val">0.45</span>
+      </div>
+      <button class="btn primary" id="btn-save-config" style="align-self:flex-start">Save Config</button>
+    </div>
+  </details>
+
+  <!-- Log -->
+  <div class="section" style="margin-top:24px">
+    <div class="section-title">Activity Log</div>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const API = 'http://localhost:3001';
+  let scanning = false;
+
+  function log(msg, level='info'){
+    const el = document.getElementById('log');
+    const time = new Date().toLocaleTimeString();
+    el.innerHTML = `<div class="log-entry"><span class="log-time">[${time}]</span> <span class="log-level-${level}">${msg}</span></div>` + el.innerHTML;
+  }
+
+  function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  function setVal(id,v){const e=document.getElementById(id);if(e){e.value=v;const l=document.getElementById(id+'-val');if(l)l.textContent=v}}
+
+  async function apiGet(path){
+    try{const r=await fetch(API+path,{credentials:'same-origin'});if(r.ok)return await r.json()}catch(e){log('API error: '+e.message,'error')}
+    return null
+  }
+  async function apiPost(path,body){
+    try{const r=await fetch(API+path,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});if(r.ok)return await r.json()}catch(e){log('API error: '+e.message,'error')}
+    return null
+  }
+
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+
+  async function loadStatus(){
+    const s = await apiGet('/api/performers/status');
+    if(!s){setText('status-text','Backend unreachable');document.getElementById('status-dot').style.background='var(--error)';return}
+    const dot=document.getElementById('status-dot');
+    const txt=document.getElementById('status-text');
+    if(s.modelsLoaded){dot.style.background='var(--success)';txt.textContent='Ready ('+s.modelSource+')'}
+    else if(s.modelLoadError){dot.style.background='var(--error)';txt.textContent='Error: '+s.modelLoadError}
+    else{dot.style.background='var(--warning)';txt.textContent='Loading models...'}
+
+    const stats = await apiGet('/api/performers/stats');
+    if(stats){setText('stat-clusters',stats.totalClusters||0);setText('stat-named',stats.namedPerformers||0);setText('stat-detections',stats.totalDetections||0);setText('stat-videos',stats.totalVideos||0)}
+
+    const named = await apiGet('/api/performers/named');
+    renderNamed(named||[]);
+    const unnamed = await apiGet('/api/performers/unnamed');
+    renderUnnamed(unnamed||[]);
+
+    const cfg = await apiGet('/api/performers/config');
+    if(cfg){setVal('cfg-detector',cfg.detector||'ssd');setVal('cfg-ssd-conf',cfg.ssdMinConfidence||0.4);setVal('cfg-min-size',cfg.minFaceSize||60);setVal('cfg-thresh',cfg.matchThresholdHigh||0.45)}
+    log('Status refreshed','success')
+  }
+
+  function renderNamed(list){
+    const c=document.getElementById('named-list');
+    if(!list.length){c.innerHTML='<div class="empty">No named performers yet.</div>';return}
+    c.innerHTML=list.map(p=>`<div class="row" data-id="${p.id}">
+      <div class="thumb">${p.thumbnail?`<img src="${esc(p.thumbnail)}">`:'<svg width="16"height="16"viewBox="0 0 24 24"fill="none"stroke="currentColor"stroke-width="2"><circle cx="12"cy="8"r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>'}</div>
+      <div class="info"><div class="name">${esc(p.name)}</div><div class="meta">${p.videoCount||0} videos · ${p.detectionCount||0} faces</div></div>
+      <div class="actions-row"><button class="btn btn-sm face-unname-btn">Unname</button><button class="btn btn-sm danger face-delete-btn">✕</button></div>
+    </div>`).join('');
+    c.querySelectorAll('.face-unname-btn').forEach(b=>b.addEventListener('click',async e=>{
+      const id=e.target.closest('.row')?.dataset?.id;if(id&&confirm('Unname?')){await apiPost('/api/performers/unname-cluster',{clusterId:id});loadStatus()}
+    }));
+    c.querySelectorAll('.face-delete-btn').forEach(b=>b.addEventListener('click',async e=>{
+      const id=e.target.closest('.row')?.dataset?.id;if(id&&confirm('Delete?')){await fetch('/api/performers/cluster/'+id,{method:'DELETE'});loadStatus()}
+    }));
+  }
+
+  function renderUnnamed(list){
+    const c=document.getElementById('unnamed-list');
+    if(!list.length){c.innerHTML='<div class="empty">No clusters detected.</div>';return}
+    c.innerHTML=list.map(cl=>`<div class="row" data-id="${cl.id}">
+      <div class="thumb">${(cl.thumbnails||[]).slice(0,1).map(t=>`<img src="${esc(t)}">`).join('')||'<svg width="16"height="16"viewBox="0 0 24 24"fill="none"stroke="currentColor"stroke-width="2"><circle cx="12"cy="8"r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>'}</div>
+      <div class="info"><div class="name">Cluster #${esc(cl.id.slice(0,8))}</div><div class="meta">${cl.faceCount||0} faces · ${cl.videoCount||0} videos</div></div>
+      <div class="actions-row"><input class="input-sm"placeholder="Name..."><button class="btn btn-sm primary face-name-btn">Name</button></div>
+    </div>`).join('');
+    c.querySelectorAll('.face-name-btn').forEach(b=>b.addEventListener('click',async e=>{
+      const row=e.target.closest('.row');const id=row?.dataset?.id;const name=row?.querySelector('input')?.value?.trim();
+      if(id&&name){await apiPost('/api/performers/name-cluster',{clusterId:id,performerName:name});loadStatus()}
+    }));
+  }
+
+  async function startScan(){
+    if(scanning)return;scanning=true;
+    document.getElementById('btn-scan').disabled=true;
+    document.getElementById('scan-progress').style.display='block';
+    log('Starting batch scan...');
+    const result = await apiPost('/api/performers/batch-scan?limit=500',{});
+    if(result?.error){log('Scan failed: '+result.error,'error');scanning=false;return}
+    const poll=setInterval(async()=>{
+      const s=await apiGet('/api/performers/status');
+      if(!s)return;
+      const q=s.queue||{};const done=result?.processed||0;const total=(q.pending||0)+(q.active||0)+done;
+      const pct=total>0?Math.round(done/total*100):0;
+      document.getElementById('scan-bar').style.width=pct+'%';
+      document.getElementById('scan-text').textContent=`Scanning... ${done}/${total} videos (${pct}%)`;
+      if(q.pending===0&&q.active===0){clearInterval(poll);scanning=false;document.getElementById('btn-scan').disabled=false;document.getElementById('scan-progress').style.display='none';log('Scan complete!','success');loadStatus()}
+    },2000);
+  }
+
+  // Event listeners
+  document.getElementById('btn-scan').addEventListener('click',startScan);
+  document.getElementById('btn-refresh').addEventListener('click',loadStatus);
+  document.getElementById('btn-clear-offline').addEventListener('click',async()=>{if(confirm('Clear offline?')){await apiPost('/api/model-endpoints/clear-offline',{});loadStatus()}});
+  document.getElementById('btn-save-config').addEventListener('click',async()=>{
+    await apiPost('/api/performers/config',{detector:document.getElementById('cfg-detector').value,ssdMinConfidence:parseFloat(document.getElementById('cfg-ssd-conf').value),minFaceSize:parseInt(document.getElementById('cfg-min-size').value),matchThresholdHigh:parseFloat(document.getElementById('cfg-thresh').value)});
+    log('Config saved','success')
+  });
+  ['cfg-ssd-conf','cfg-min-size','cfg-thresh'].forEach(id=>{document.getElementById(id).addEventListener('input',e=>{document.getElementById(id+'-val').textContent=e.target.value})});
+
+  // Init
+  log('Dashboard loaded');
+  loadStatus();
+  setInterval(loadStatus,30000);
+})();
+</script>
+</body>
+</html>
