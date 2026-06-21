@@ -1393,6 +1393,10 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
             <span>Agent Tools</span>
           </button>
+          <button class="settings-nav-item admin-only" data-settings-tab="faces">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+            <span>Face Recognition</span>
+          </button>
           <button class="settings-nav-item admin-only" data-settings-tab="users">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span>Users</span>
@@ -2408,12 +2412,120 @@
             </div>
             <div id="adm-wipeMsg" style="margin-top:8px;"></div>
           </div>
+
+        <!-- ═══ FACE RECOGNITION TAB ═══ -->
+        <div data-settings-panel="faces" class="hidden">
+          <div class="admin-card">
+            <h2 style="display:flex;align-items:center;gap:8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+              Face Recognition Dashboard
+              <span style="flex:1"></span>
+              <span id="face-model-status" class="admin-toggle-sub" style="font-weight:normal;">Loading...</span>
+            </h2>
+            <div class="admin-toggle-sub" style="margin-bottom:12px">Detect faces, cluster performers, and organize videos by person.</div>
+
+            <!-- Stats Row -->
+            <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+              <div style="background:color-mix(in srgb,var(--fg) 5%,transparent);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+                <div id="face-stat-clusters" style="font-size:24px;font-weight:700;">0</div>
+                <div style="font-size:11px;opacity:0.6;">Clusters</div>
+              </div>
+              <div style="background:color-mix(in srgb,var(--fg) 5%,transparent);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+                <div id="face-stat-named" style="font-size:24px;font-weight:700;">0</div>
+                <div style="font-size:11px;opacity:0.6;">Named</div>
+              </div>
+              <div style="background:color-mix(in srgb,var(--fg) 5%,transparent);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+                <div id="face-stat-detections" style="font-size:24px;font-weight:700;">0</div>
+                <div style="font-size:11px;opacity:0.6;">Detections</div>
+              </div>
+              <div style="background:color-mix(in srgb,var(--fg) 5%,transparent);border-radius:8px;padding:10px 16px;flex:1;min-width:120px;">
+                <div id="face-stat-videos" style="font-size:24px;font-weight:700;">0</div>
+                <div style="font-size:11px;opacity:0.6;">Videos</div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+              <button class="admin-btn-add" id="face-scan-all-btn" style="display:inline-flex;align-items:center;gap:6px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Scan All Videos
+              </button>
+              <button class="admin-btn-sm" id="face-refresh-btn" style="display:inline-flex;align-items:center;gap:6px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Refresh
+              </button>
+              <button class="admin-btn-sm" id="face-clear-offline-btn" style="display:inline-flex;align-items:center;gap:6px;opacity:0.85;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Clear Offline
+              </button>
+            </div>
+
+            <!-- Scan Progress -->
+            <div id="face-scan-progress" style="display:none;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span id="face-scan-text" style="font-size:12px;">Scanning...</span>
+                <span id="face-scan-pct" style="font-size:12px;opacity:0.6;"></span>
+              </div>
+              <div style="background:color-mix(in srgb,var(--fg) 8%,transparent);border-radius:4px;height:6px;overflow:hidden;">
+                <div id="face-scan-bar" style="background:var(--accent,var(--red));height:100%;width:0%;transition:width 0.3s;"></div>
+              </div>
+            </div>
+
+            <!-- Performer List -->
+            <div style="margin-bottom:8px;">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.7;margin-bottom:6px;">Named Performers</div>
+              <div id="face-named-list" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;">
+                <div class="admin-empty">No named performers yet. Scan videos to detect faces.</div>
+              </div>
+            </div>
+
+            <!-- Unnamed Clusters -->
+            <div style="margin-top:16px;">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.7;margin-bottom:6px;">Unnamed Clusters</div>
+              <div id="face-unnamed-list" style="display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto;">
+                <div class="admin-empty">No clusters detected. Scan videos first.</div>
+              </div>
+            </div>
+
+            <!-- Config -->
+            <details style="margin-top:16px;">
+              <summary style="cursor:pointer;font-size:12px;opacity:0.7;">Configuration</summary>
+              <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
+                <div class="settings-row">
+                  <label class="settings-label">Detector</label>
+                  <select id="face-config-detector" class="settings-select" style="width:160px;">
+                    <option value="ssd">SSD Mobilenet V1</option>
+                    <option value="tiny">TinyFaceDetector</option>
+                    <option value="haar">Haar Cascade</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <label class="settings-label">SSD Min Confidence</label>
+                  <input type="range" id="face-config-ssd-conf" min="0.1" max="0.9" step="0.05" value="0.4" style="width:120px;">
+                  <span id="face-config-ssd-conf-val" style="font-size:11px;opacity:0.6;">0.4</span>
+                </div>
+                <div class="settings-row">
+                  <label class="settings-label">Min Face Size</label>
+                  <input type="range" id="face-config-min-size" min="20" max="200" step="10" value="60" style="width:120px;">
+                  <span id="face-config-min-size-val" style="font-size:11px;opacity:0.6;">60</span>
+                </div>
+                <div class="settings-row">
+                  <label class="settings-label">Match Threshold (High)</label>
+                  <input type="range" id="face-config-thresh-high" min="0.3" max="0.7" step="0.05" value="0.45" style="width:120px;">
+                  <span id="face-config-thresh-high-val" style="font-size:11px;opacity:0.6;">0.45</span>
+                </div>
+                <div class="settings-row">
+                  <label class="settings-label">Match Threshold (Low)</label>
+                  <input type="range" id="face-config-thresh-low" min="0.3" max="0.7" step="0.05" value="0.55" style="width:120px;">
+                  <span id="face-config-thresh-low-val" style="font-size:11px;opacity:0.6;">0.55</span>
+                </div>
+                <button class="admin-btn-sm" id="face-config-save" style="align-self:flex-start;">Save Config</button>
+              </div>
+            </details>
+          </div>
         </div>
 
-      </div>
-      </div>
-    </div>
-  </div>
+      </div><!-- end settings-panels -->
 
   <!-- Search overlay (Ctrl+K command palette) -->
   <div class="search-overlay hidden" id="search-overlay">
@@ -2459,6 +2571,7 @@
 <script type="module" src="/static/js/theme.js"></script>
 <script type="module" src="/static/js/censor.js"></script>
 <script type="module" src="/static/js/settings.js"></script>
+<script type="module" src="/static/js/face-recognition.js"></script>
 <script type="module" src="/static/js/admin.js"></script>
 <script type="module" src="/static/js/assistant.js"></script>
 <script type="module" src="/static/app.js"></script>  <!-- app.js must be LAST -->
